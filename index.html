@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>All Troy's Fault — Live Country & Rock</title>
+<meta name="description" content="All Troy's Fault — a country band with a rock kick. See upcoming shows, watch live videos, book us for your event, and shop merch.">
+<link rel="icon" href="images/logo.png">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="#home">
+      <img data-logo src="images/logo.png" alt="All Troy's Fault logo">
+      <span data-logo-fallback class="brand-fallback">ATF</span>
+      All Troy's Fault
+    </a>
+    <nav>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#shows">Shows</a></li>
+        <li><a href="#videos">Videos</a></li>
+        <li><a href="#merch">Merch</a></li>
+        <li><a href="#book">Book Us</a></li>
+        <li><a href="#follow">Follow</a></li>
+      </ul>
+    </nav>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">☰</button>
+  </div>
+</header>
+
+<section class="hero" id="home">
+  <div class="container">
+    <img data-logo class="hero-logo" src="images/logo.png" alt="All Troy's Fault logo">
+    <div data-logo-fallback class="hero-logo-fallback">
+      <span style="font-size:34px;">ATF</span>
+      <span>EST. BAND</span>
+    </div>
+    <h1>All Troy's Fault</h1>
+    <p class="hero-tagline">Country, with a kick</p>
+    <p class="hero-desc">Honky-tonk roots, a rock and roll backbone, and whatever else the night calls for. Catch us live, or bring us to yours.</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="#shows">See upcoming shows</a>
+      <a class="btn btn-outline" href="#book">Book the band</a>
+    </div>
+  </div>
+</section>
+
+<section id="shows">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">On the calendar</span>
+      <h2 class="section-title">Upcoming Shows</h2>
+      <p class="section-sub">Where to find us next.</p>
+    </div>
+    <div class="show-list" id="showList">
+      <div class="empty-state">Loading shows…</div>
+    </div>
+  </div>
+</section>
+
+<section id="videos">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">From the stage</span>
+      <h2 class="section-title">On Stage</h2>
+      <p class="section-sub">Live clips from recent shows.</p>
+    </div>
+    <div class="video-grid" id="videoGrid">
+      <div class="empty-state">Loading videos…</div>
+    </div>
+  </div>
+</section>
+
+<section id="merch">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">Take it home</span>
+      <h2 class="section-title">Merch</h2>
+      <p class="section-sub">Designs link out to our print-on-demand stores.</p>
+    </div>
+    <div class="merch-grid" id="merchGrid">
+      <div class="empty-state">Loading merch…</div>
+    </div>
+  </div>
+</section>
+
+<section id="book">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">Bring us to you</span>
+      <h2 class="section-title">Book the Band</h2>
+      <p class="section-sub">Bars, weddings, private parties, festivals — tell us about your event and we'll get back to you.</p>
+    </div>
+    <form class="booking-grid reveal" id="bookingForm" novalidate>
+      <div class="field">
+        <label for="name">Your name</label>
+        <input id="name" name="name" type="text" required>
+      </div>
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" required>
+      </div>
+      <div class="field">
+        <label for="phone">Phone (optional)</label>
+        <input id="phone" name="phone" type="tel">
+      </div>
+      <div class="field">
+        <label for="eventDate">Event date</label>
+        <input id="eventDate" name="eventDate" type="date">
+      </div>
+      <div class="field full">
+        <label for="venue">Venue / location</label>
+        <input id="venue" name="venue" type="text" placeholder="Name and city">
+      </div>
+      <div class="field full">
+        <label for="message">Tell us about the event</label>
+        <textarea id="message" name="message" placeholder="Type of event, set length, budget — whatever's helpful."></textarea>
+      </div>
+      <div class="field full">
+        <button class="btn btn-primary" type="submit">Send request</button>
+        <div class="form-status" id="formStatus"></div>
+      </div>
+    </form>
+  </div>
+</section>
+
+<section id="follow">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">Stay in the loop</span>
+      <h2 class="section-title">Follow Along</h2>
+    </div>
+    <div class="follow-row reveal">
+      <a class="social-btn" href="https://www.facebook.com/share/1CYRmiHdjt/" target="_blank" rel="noopener">Facebook</a>
+      <a class="social-btn" href="https://www.instagram.com/alltroysfault?igsh=ZnI5MjI0ZzV0YnZl" target="_blank" rel="noopener">Instagram</a>
+      <a class="social-btn" href="https://youtube.com/@alltroysfault?si=9RZC-3WEm7nSNqzr" target="_blank" rel="noopener">YouTube</a>
+      <a class="social-btn" href="https://www.tiktok.com/@all.troys.fault?_r=1&_t=ZP-97OyrEZTzYd" target="_blank" rel="noopener">TikTok</a>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    &copy; <span id="year"></span> All Troy's Fault · <a href="admin.html">Band login</a>
+  </div>
+</footer>
+
+<script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+<script src="js/config.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
