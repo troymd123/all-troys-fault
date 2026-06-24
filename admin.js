@@ -4,6 +4,10 @@
   const SESSION_KEY = "atf_admin_pw";
   // Track current lists for reorder
   let videosList = [], photosList = [], currentMerch = [];
+  // Track edit state
+  let editingVideoId = null, editingVideoItem = null;
+  let editingPhotoId = null, editingPhotoItem = null;
+  let editingMerchId = null, editingMerchItem = null;
 
   const loginView = document.getElementById("loginView");
   const dashView  = document.getElementById("dashView");
@@ -170,12 +174,12 @@
           ${v.thumbnail ? `<img class="admin-thumb" src="${esc(v.thumbnail)}" alt="">` : ""}
           <div class="meta">
             <div class="title">${esc(v.title||"Untitled")}</div>
-            <div class="sub">${esc(v.url||"")}</div>
           </div>
         </div>
         <div class="row-actions">
           <button class="reorder-btn" data-idx="${idx}" data-dir="up" ${idx===0?"disabled":""}>&#8593;</button>
           <button class="reorder-btn" data-idx="${idx}" data-dir="down" ${idx===arr.length-1?"disabled":""}>&#8595;</button>
+          <button data-edit="${v.id}">Edit</button>
           <button class="danger" data-delete="${v.id}">Delete</button>
         </div>
       </div>`).join("");
@@ -184,12 +188,20 @@
       const nl = [...videosList]; const [m]=nl.splice(idx,1); nl.splice(toIdx,0,m);
       try { renderVideos(await callApi("videos","reorder",null,null,nl.map(i=>i.id))); } catch(err){alert(err.message);}
     }));
-    videoList.querySelectorAll("[data-delete]").forEach(btn =>
-      btn.addEventListener("click", async () => {
-        if(!confirm("Delete this video?")) return;
-        try { renderVideos(await callApi("videos","delete",null,btn.dataset.delete)); } catch(err){alert(err.message);}
-      })
-    );
+    videoList.querySelectorAll("[data-edit]").forEach(btn => btn.addEventListener("click", () => {
+      const v = videosList.find(x => x.id===btn.dataset.edit); if(!v) return;
+      editingVideoId = v.id; editingVideoItem = v;
+      videoForm.querySelector('[name="title"]').value    = v.title||"";
+      videoForm.querySelector('[name="url"]').value      = v.url||"";
+      videoForm.querySelector('[name="thumbUrl"]').value = "";
+      videoForm.querySelector('[name="thumbFile"]').value = "";
+      videoForm.querySelector('button[type="submit"]').textContent = "Update video";
+      videoForm.scrollIntoView({behavior:"smooth",block:"center"});
+    }));
+    videoList.querySelectorAll("[data-delete]").forEach(btn => btn.addEventListener("click", async () => {
+      if(!confirm("Delete this video?")) return;
+      try { renderVideos(await callApi("videos","delete",null,btn.dataset.delete)); } catch(err){alert(err.message);}
+    }));
   }
 
   videoForm.addEventListener("submit", async e => {
@@ -200,14 +212,23 @@
     const thumbFile = videoForm.querySelector('[name="thumbFile"]').files[0];
     const thumbUrl  = videoForm.querySelector('[name="thumbUrl"]').value.trim();
     if(!url){alert("A video link is required.");return;}
-    btn.disabled=true; btn.textContent="Saving\u2026";
+    btn.disabled=true; btn.textContent="Saving…";
     try {
-      const thumbnail = thumbFile ? await compressImage(thumbFile, 640, 0.78) : thumbUrl;
-      renderVideos(await callApi("videos","add",{title, url, thumbnail}));
-      videoForm.reset();
+      const thumbnail = thumbFile ? await compressImage(thumbFile, 640, 0.78)
+        : thumbUrl ? thumbUrl
+        : (editingVideoItem ? editingVideoItem.thumbnail||"" : "");
+      const action = editingVideoId ? "update" : "add";
+      renderVideos(await callApi("videos", action, {title, url, thumbnail}, editingVideoId));
+      videoForm.reset(); editingVideoId=null; editingVideoItem=null;
+      videoForm.querySelector('button[type="submit"]').textContent="Add video";
     } catch(err){alert(err.message);}
-    finally{btn.disabled=false; btn.textContent="Add video";}
+    finally{btn.disabled=false;}
   });
+  document.getElementById("videoCancelEdit").addEventListener("click", () => {
+    videoForm.reset(); editingVideoId=null; editingVideoItem=null;
+    videoForm.querySelector('button[type="submit"]').textContent="Add video";
+  });
+
 
   /* ═══════════════════════════════════════════════
      PHOTOS
@@ -229,6 +250,7 @@
         <div class="row-actions">
           <button class="reorder-btn" data-idx="${idx}" data-dir="up" ${idx===0?"disabled":""}>&#8593;</button>
           <button class="reorder-btn" data-idx="${idx}" data-dir="down" ${idx===arr.length-1?"disabled":""}>&#8595;</button>
+          <button data-edit="${p.id}">Edit</button>
           <button class="danger" data-delete="${p.id}">Delete</button>
         </div>
       </div>`).join("");
@@ -237,29 +259,44 @@
       const nl = [...photosList]; const [m]=nl.splice(idx,1); nl.splice(toIdx,0,m);
       try { renderPhotos(await callApi("photos","reorder",null,null,nl.map(i=>i.id))); } catch(err){alert(err.message);}
     }));
-    photoList.querySelectorAll("[data-delete]").forEach(btn =>
-      btn.addEventListener("click", async () => {
-        if(!confirm("Delete this photo?")) return;
-        try { renderPhotos(await callApi("photos","delete",null,btn.dataset.delete)); } catch(err){alert(err.message);}
-      })
-    );
+    photoList.querySelectorAll("[data-edit]").forEach(btn => btn.addEventListener("click", () => {
+      const p = photosList.find(x => x.id===btn.dataset.edit); if(!p) return;
+      editingPhotoId = p.id; editingPhotoItem = p;
+      photoForm.querySelector('[name="caption"]').value  = p.caption||"";
+      photoForm.querySelector('[name="photoUrl"]').value = "";
+      photoForm.querySelector('[name="photoFile"]').value = "";
+      photoForm.querySelector('button[type="submit"]').textContent = "Update photo";
+      photoForm.scrollIntoView({behavior:"smooth",block:"center"});
+    }));
+    photoList.querySelectorAll("[data-delete]").forEach(btn => btn.addEventListener("click", async () => {
+      if(!confirm("Delete this photo?")) return;
+      try { renderPhotos(await callApi("photos","delete",null,btn.dataset.delete)); } catch(err){alert(err.message);}
+    }));
   }
 
   photoForm.addEventListener("submit", async e => {
     e.preventDefault();
-    const btn       = photoForm.querySelector('button[type="submit"]');
-    const file      = photoForm.querySelector('[name="photoFile"]').files[0];
-    const url       = photoForm.querySelector('[name="photoUrl"]').value.trim();
-    const caption   = photoForm.querySelector('[name="caption"]').value.trim();
-    if(!file && !url){alert("Upload a photo or paste an image URL.");return;}
-    btn.disabled=true; btn.textContent="Saving\u2026";
+    const btn     = photoForm.querySelector('button[type="submit"]');
+    const file    = photoForm.querySelector('[name="photoFile"]').files[0];
+    const url     = photoForm.querySelector('[name="photoUrl"]').value.trim();
+    const caption = photoForm.querySelector('[name="caption"]').value.trim();
+    const existingImage = editingPhotoItem ? editingPhotoItem.image||"" : "";
+    if(!file && !url && !existingImage){alert("Upload a photo or paste an image URL.");return;}
+    btn.disabled=true; btn.textContent="Saving…";
     try {
-      const image = file ? await compressImage(file, 900, 0.8) : url;
-      renderPhotos(await callApi("photos","add",{image, caption}));
-      photoForm.reset();
+      const image  = file ? await compressImage(file, 900, 0.8) : url || existingImage;
+      const action = editingPhotoId ? "update" : "add";
+      renderPhotos(await callApi("photos", action, {image, caption}, editingPhotoId));
+      photoForm.reset(); editingPhotoId=null; editingPhotoItem=null;
+      photoForm.querySelector('button[type="submit"]').textContent="Add photo";
     } catch(err){alert(err.message);}
-    finally{btn.disabled=false; btn.textContent="Add photo";}
+    finally{btn.disabled=false;}
   });
+  document.getElementById("photoCancelEdit").addEventListener("click", () => {
+    photoForm.reset(); editingPhotoId=null; editingPhotoItem=null;
+    photoForm.querySelector('button[type="submit"]').textContent="Add photo";
+  });
+
 
   /* ═══════════════════════════════════════════════
      MERCH
@@ -282,6 +319,7 @@
         <div class="row-actions">
           <button class="reorder-btn" data-idx="${idx}" data-dir="up" ${idx===0?"disabled":""}>&#8593;</button>
           <button class="reorder-btn" data-idx="${idx}" data-dir="down" ${idx===arr.length-1?"disabled":""}>&#8595;</button>
+          <button data-edit="${m.id}">Edit</button>
           <button class="danger" data-delete="${m.id}">Delete</button>
         </div>
       </div>`).join("");
@@ -290,12 +328,21 @@
       const nl = [...currentMerch]; const [mv]=nl.splice(idx,1); nl.splice(toIdx,0,mv);
       try { renderMerch(await callApi("merch","reorder",null,null,nl.map(i=>i.id))); } catch(err){alert(err.message);}
     }));
-    merchList.querySelectorAll("[data-delete]").forEach(btn =>
-      btn.addEventListener("click", async () => {
-        if(!confirm("Delete this merch item?")) return;
-        try { renderMerch(await callApi("merch","delete",null,btn.dataset.delete)); } catch(err){alert(err.message);}
-      })
-    );
+    merchList.querySelectorAll("[data-edit]").forEach(btn => btn.addEventListener("click", () => {
+      const m = currentMerch.find(x => x.id===btn.dataset.edit); if(!m) return;
+      editingMerchId = m.id; editingMerchItem = m;
+      merchForm.querySelector('[name="title"]').value     = m.title||"";
+      merchForm.querySelector('[name="storeName"]').value = m.storeName||"";
+      merchForm.querySelector('[name="storeUrl"]').value  = m.storeUrl||"";
+      merchForm.querySelector('[name="imageUrl"]').value  = "";
+      merchForm.querySelector('[name="imageFile"]').value = "";
+      merchForm.querySelector('button[type="submit"]').textContent = "Update item";
+      merchForm.scrollIntoView({behavior:"smooth",block:"center"});
+    }));
+    merchList.querySelectorAll("[data-delete]").forEach(btn => btn.addEventListener("click", async () => {
+      if(!confirm("Delete this merch item?")) return;
+      try { renderMerch(await callApi("merch","delete",null,btn.dataset.delete)); } catch(err){alert(err.message);}
+    }));
   }
 
   merchForm.addEventListener("submit", async e => {
@@ -306,80 +353,24 @@
     const storeUrl  = merchForm.querySelector('[name="storeUrl"]').value.trim();
     const file      = merchForm.querySelector('[name="imageFile"]').files[0];
     const imageUrl  = merchForm.querySelector('[name="imageUrl"]').value.trim();
+    const existingImage = editingMerchItem ? editingMerchItem.image||"" : "";
     if(!title||!storeName||!storeUrl){alert("Title, store name, and store link are required.");return;}
-    if(!file&&!imageUrl){alert("Add a design image or paste an image URL.");return;}
-    btn.disabled=true; btn.textContent="Saving\u2026";
+    if(!file && !imageUrl && !existingImage){alert("Add a design image or paste an image URL.");return;}
+    btn.disabled=true; btn.textContent="Saving…";
     try {
-      const image = file ? await compressImage(file) : imageUrl;
-      renderMerch(await callApi("merch","add",{title, storeName, storeUrl, image}));
-      merchForm.reset();
+      const image  = file ? await compressImage(file) : imageUrl || existingImage;
+      const action = editingMerchId ? "update" : "add";
+      renderMerch(await callApi("merch", action, {title, storeName, storeUrl, image}, editingMerchId));
+      merchForm.reset(); editingMerchId=null; editingMerchItem=null;
+      merchForm.querySelector('button[type="submit"]').textContent="Add item";
     } catch(err){alert(err.message);}
-    finally{btn.disabled=false; btn.textContent="Add item";}
+    finally{btn.disabled=false;}
+  });
+  document.getElementById("merchCancelEdit").addEventListener("click", () => {
+    merchForm.reset(); editingMerchId=null; editingMerchItem=null;
+    merchForm.querySelector('button[type="submit"]').textContent="Add item";
   });
 
-
-  /* ═══════════════════════════════════════════════
-     BACKGROUND PHOTOS
-  ════════════════════════════════════════════════ */
-  const BG_SLOTS = ["hero","shows","videos","merch","book","follow"];
-
-  async function loadBgPhotos() {
-    try {
-      const res    = await fetch(`${API}/api/sitephotos`);
-      const photos = await res.json();
-      BG_SLOTS.forEach(slot => {
-        const thumb = document.getElementById(`bgThumb-${slot}`);
-        if (thumb && photos[slot]) {
-          thumb.src = photos[slot];
-          thumb.classList.add("visible");
-        }
-      });
-    } catch {}
-  }
-
-  async function saveBg(slot) {
-    const status  = document.getElementById("bgStatus");
-    const file    = document.getElementById(`bgFile-${slot}`).files[0];
-    const urlVal  = document.getElementById(`bgUrl-${slot}`).value.trim();
-    if (!file && !urlVal) { status.textContent = "Upload a photo or paste a URL."; status.className = "form-status err"; return; }
-    status.textContent = "Saving…"; status.className = "form-status";
-    try {
-      const image = file ? await compressImage(file, 1200, 0.78) : urlVal;
-      const res   = await fetch(`${API}/api/admin/sitephotos`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password: getPassword(), slot, image }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Save failed.");
-      const thumb = document.getElementById(`bgThumb-${slot}`);
-      if (thumb) { thumb.src = image; thumb.classList.add("visible"); }
-      document.getElementById(`bgFile-${slot}`).value = "";
-      document.getElementById(`bgUrl-${slot}`).value  = "";
-      status.textContent = `✓ ${slot} background saved.`;
-      status.className = "form-status ok";
-    } catch(err) { status.textContent = err.message; status.className = "form-status err"; }
-  }
-
-  async function clearBg(slot) {
-    if (!confirm(`Clear the ${slot} background photo?`)) return;
-    const status = document.getElementById("bgStatus");
-    try {
-      const res  = await fetch(`${API}/api/admin/sitephotos`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password: getPassword(), slot, image: "" }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Clear failed.");
-      const thumb = document.getElementById(`bgThumb-${slot}`);
-      if (thumb) { thumb.src = ""; thumb.classList.remove("visible"); }
-      status.textContent = `✓ ${slot} background cleared.`;
-      status.className = "form-status ok";
-    } catch(err) { status.textContent = err.message; status.className = "form-status err"; }
-  }
-
-  // Expose to inline onclick handlers in admin.html
-  window.saveBg  = saveBg;
-  window.clearBg = clearBg;
 
   /* ── Load all ───────────────────────────────────────────── */
   async function loadAll() {
