@@ -2,6 +2,8 @@
 (function () {
   const API = CONFIG.API_BASE;
   const SESSION_KEY = "atf_admin_pw";
+  // Track current lists for reorder
+  let videosList = [], photosList = [], currentMerch = [];
 
   const loginView = document.getElementById("loginView");
   const dashView  = document.getElementById("dashView");
@@ -43,8 +45,8 @@
   });
 
   /* ── API helper ─────────────────────────────────────────── */
-  async function callApi(type, action, item, itemId) {
-    const res  = await fetch(`${API}/api/admin/data`, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({password:getPassword(), type, action, item, itemId}) });
+  async function callApi(type, action, item, itemId, orderedIds) {
+    const res  = await fetch(`${API}/api/admin/data`, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({password:getPassword(), type, action, item, itemId, orderedIds}) });
     const data = await res.json();
     if (!res.ok) { if (res.status===401){sessionStorage.removeItem(SESSION_KEY);showLogin();} throw new Error(data.error||"Request failed."); }
     return data.list;
@@ -160,8 +162,9 @@
   const videoList = document.getElementById("videoList");
 
   function renderVideos(videos) {
+    videosList = [...videos];
     if (!videos.length) { videoList.innerHTML=`<div class="empty-state">No videos added yet.</div>`; return; }
-    videoList.innerHTML = videos.slice().reverse().map(v => `
+    videoList.innerHTML = videos.map((v, idx, arr) => `
       <div class="admin-row">
         <div class="admin-meta-row">
           ${v.thumbnail ? `<img class="admin-thumb" src="${esc(v.thumbnail)}" alt="">` : ""}
@@ -171,15 +174,22 @@
           </div>
         </div>
         <div class="row-actions">
+          <button class="reorder-btn" data-idx="${idx}" data-dir="up" ${idx===0?"disabled":""}>&#8593;</button>
+          <button class="reorder-btn" data-idx="${idx}" data-dir="down" ${idx===arr.length-1?"disabled":""}>&#8595;</button>
           <button class="danger" data-delete="${v.id}">Delete</button>
         </div>
       </div>`).join("");
-    videoList.querySelectorAll("[data-delete]").forEach(btn => {
+    videoList.querySelectorAll(".reorder-btn").forEach(btn => btn.addEventListener("click", async () => {
+      const idx = parseInt(btn.dataset.idx), toIdx = btn.dataset.dir==="up" ? idx-1 : idx+1;
+      const nl = [...videosList]; const [m]=nl.splice(idx,1); nl.splice(toIdx,0,m);
+      try { renderVideos(await callApi("videos","reorder",null,null,nl.map(i=>i.id))); } catch(err){alert(err.message);}
+    }));
+    videoList.querySelectorAll("[data-delete]").forEach(btn =>
       btn.addEventListener("click", async () => {
         if(!confirm("Delete this video?")) return;
         try { renderVideos(await callApi("videos","delete",null,btn.dataset.delete)); } catch(err){alert(err.message);}
-      });
-    });
+      })
+    );
   }
 
   videoForm.addEventListener("submit", async e => {
@@ -206,8 +216,9 @@
   const photoList = document.getElementById("photoList");
 
   function renderPhotos(photos) {
+    photosList = [...photos];
     if (!photos.length) { photoList.innerHTML=`<div class="empty-state">No photos added yet.</div>`; return; }
-    photoList.innerHTML = photos.slice().reverse().map(p => `
+    photoList.innerHTML = photos.map((p, idx, arr) => `
       <div class="admin-row">
         <div class="admin-meta-row">
           <img class="admin-thumb" src="${esc(p.image||"")}" alt="">
@@ -216,15 +227,22 @@
           </div>
         </div>
         <div class="row-actions">
+          <button class="reorder-btn" data-idx="${idx}" data-dir="up" ${idx===0?"disabled":""}>&#8593;</button>
+          <button class="reorder-btn" data-idx="${idx}" data-dir="down" ${idx===arr.length-1?"disabled":""}>&#8595;</button>
           <button class="danger" data-delete="${p.id}">Delete</button>
         </div>
       </div>`).join("");
-    photoList.querySelectorAll("[data-delete]").forEach(btn => {
+    photoList.querySelectorAll(".reorder-btn").forEach(btn => btn.addEventListener("click", async () => {
+      const idx = parseInt(btn.dataset.idx), toIdx = btn.dataset.dir==="up" ? idx-1 : idx+1;
+      const nl = [...photosList]; const [m]=nl.splice(idx,1); nl.splice(toIdx,0,m);
+      try { renderPhotos(await callApi("photos","reorder",null,null,nl.map(i=>i.id))); } catch(err){alert(err.message);}
+    }));
+    photoList.querySelectorAll("[data-delete]").forEach(btn =>
       btn.addEventListener("click", async () => {
         if(!confirm("Delete this photo?")) return;
         try { renderPhotos(await callApi("photos","delete",null,btn.dataset.delete)); } catch(err){alert(err.message);}
-      });
-    });
+      })
+    );
   }
 
   photoForm.addEventListener("submit", async e => {
@@ -250,8 +268,9 @@
   const merchList = document.getElementById("merchList");
 
   function renderMerch(items) {
+    currentMerch = [...items];
     if (!items.length) { merchList.innerHTML=`<div class="empty-state">No merch items yet.</div>`; return; }
-    merchList.innerHTML = items.slice().reverse().map(m => `
+    merchList.innerHTML = items.map((m, idx, arr) => `
       <div class="admin-row">
         <div class="admin-meta-row">
           <img class="admin-thumb" src="${esc(m.image||"")}" alt="">
@@ -261,15 +280,22 @@
           </div>
         </div>
         <div class="row-actions">
+          <button class="reorder-btn" data-idx="${idx}" data-dir="up" ${idx===0?"disabled":""}>&#8593;</button>
+          <button class="reorder-btn" data-idx="${idx}" data-dir="down" ${idx===arr.length-1?"disabled":""}>&#8595;</button>
           <button class="danger" data-delete="${m.id}">Delete</button>
         </div>
       </div>`).join("");
-    merchList.querySelectorAll("[data-delete]").forEach(btn => {
+    merchList.querySelectorAll(".reorder-btn").forEach(btn => btn.addEventListener("click", async () => {
+      const idx = parseInt(btn.dataset.idx), toIdx = btn.dataset.dir==="up" ? idx-1 : idx+1;
+      const nl = [...currentMerch]; const [mv]=nl.splice(idx,1); nl.splice(toIdx,0,mv);
+      try { renderMerch(await callApi("merch","reorder",null,null,nl.map(i=>i.id))); } catch(err){alert(err.message);}
+    }));
+    merchList.querySelectorAll("[data-delete]").forEach(btn =>
       btn.addEventListener("click", async () => {
         if(!confirm("Delete this merch item?")) return;
         try { renderMerch(await callApi("merch","delete",null,btn.dataset.delete)); } catch(err){alert(err.message);}
-      });
-    });
+      })
+    );
   }
 
   merchForm.addEventListener("submit", async e => {
