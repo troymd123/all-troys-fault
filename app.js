@@ -169,47 +169,89 @@
     }
   }
 
-  /* ── Videos (horizontal carousel, click-to-play) ──────── */
+  /* ── Videos — carousel, single-play, fullscreen ─────────── */
   async function loadVideos() {
     const carousel = document.getElementById("videoCarousel");
     if (!carousel) return;
     try {
       const videos = await fetch(`${API}/api/videos`).then(r => r.json());
-      if (!videos.length) { carousel.innerHTML = `<div class="empty-state" style="min-width:280px;">No videos posted yet.</div>`; return; }
+      if (!videos.length) {
+        carousel.innerHTML = `<div class="empty-state" style="min-width:280px;">No videos posted yet.</div>`;
+        return;
+      }
 
       carousel.innerHTML = videos.slice().map(v => {
         const ytId  = youtubeId(v.url || "");
         const drvId = driveId(v.url || "");
-        const thumb = v.thumbnail ||
-          (ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : "");
-        const thumbHtml = thumb
-          ? `<img src="${esc(thumb)}" alt="${esc(v.title||"")}" loading="lazy">`
-          : `<div style="width:100%;height:100%;background:var(--black-card);display:flex;align-items:center;justify-content:center;color:var(--smoke);font-size:13px;">No preview</div>`;
+        const thumb = v.thumbnail || (ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : "");
+        const embed = ytId  ? `https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1&rel=0&fs=1`
+                    : drvId ? `https://drive.google.com/file/d/${drvId}/preview`
+                    : "";
 
-        return `<div class="video-slide">
-          <div class="video-thumb-wrap" data-ytid="${esc(ytId||"")}" data-drvid="${esc(drvId||"")}" data-url="${esc(v.url||"")}">
-            ${thumbHtml}
+        const thumbContent = thumb
+          ? `<img src="${esc(thumb)}" alt="${esc(v.title||"")}" loading="lazy">`
+          : `<div class="video-no-thumb">No preview</div>`;
+
+        return `
+        <div class="video-slide" data-embed="${esc(embed)}" data-url="${esc(v.url||"")}">
+          <div class="video-thumb-state">
+            ${thumbContent}
             <div class="play-btn"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
           </div>
-          <div class="video-title">${esc(v.title||"")}</div>
+          <div class="video-iframe-state">
+            <iframe src="" allowfullscreen allow="autoplay; fullscreen" loading="lazy"></iframe>
+            <button class="video-fs-btn" title="Full screen">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="15,3 21,3 21,9"/><polyline points="9,21 3,21 3,15"/>
+                <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
+              </svg>
+            </button>
+            <button class="video-stop-btn" title="Close video">&#10005;</button>
+          </div>
+          <div class="video-slide-title">${esc(v.title||"")}</div>
         </div>`;
       }).join("");
 
-      // Click-to-play
-      carousel.querySelectorAll(".video-thumb-wrap").forEach(wrap => {
-        wrap.addEventListener("click", () => {
-          const ytId  = wrap.dataset.ytid;
-          const drvId = wrap.dataset.drvid;
-          let embedUrl = "";
-          if (ytId)       embedUrl = `https://www.youtube.com/embed/${ytId}?autoplay=1`;
-          else if (drvId) embedUrl = `https://drive.google.com/file/d/${drvId}/preview`;
-          else { window.open(wrap.dataset.url, "_blank"); return; }
-          const frame = document.createElement("div");
-          frame.className = "video-frame";
-          frame.innerHTML = `<iframe src="${embedUrl}" allowfullscreen allow="autoplay" loading="lazy"></iframe>`;
-          wrap.replaceWith(frame);
+      // Stop all playing videos except the specified one
+      function stopAll(except) {
+        carousel.querySelectorAll(".video-slide.is-playing").forEach(s => {
+          if (s === except) return;
+          s.classList.remove("is-playing");
+          const f = s.querySelector(".video-iframe-state iframe");
+          if (f) f.src = ""; // clears the video, stopping playback
+        });
+      }
+
+      carousel.querySelectorAll(".video-slide").forEach(slide => {
+        // Thumbnail click → play
+        slide.querySelector(".video-thumb-state").addEventListener("click", () => {
+          const embed = slide.dataset.embed;
+          if (!embed) { window.open(slide.dataset.url, "_blank"); return; }
+          stopAll(slide);
+          const iframe = slide.querySelector(".video-iframe-state iframe");
+          if (iframe) iframe.src = embed;
+          slide.classList.add("is-playing");
+        });
+
+        // Fullscreen button
+        const fsBtn = slide.querySelector(".video-fs-btn");
+        if (fsBtn) fsBtn.addEventListener("click", e => {
+          e.stopPropagation();
+          const container = slide.querySelector(".video-iframe-state");
+          (container.requestFullscreen || container.webkitRequestFullscreen ||
+           container.mozRequestFullScreen || (() => {})).call(container);
+        });
+
+        // Stop / close button
+        const stopBtn = slide.querySelector(".video-stop-btn");
+        if (stopBtn) stopBtn.addEventListener("click", e => {
+          e.stopPropagation();
+          slide.classList.remove("is-playing");
+          const iframe = slide.querySelector(".video-iframe-state iframe");
+          if (iframe) iframe.src = "";
         });
       });
+
     } catch {
       carousel.innerHTML = `<div class="empty-state" style="min-width:280px;">Couldn't load videos right now.</div>`;
     }

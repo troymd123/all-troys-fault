@@ -451,14 +451,59 @@ section:last-of-type { border-bottom: none; }
 .video-frame { position:relative; width:100%; aspect-ratio:16/9; }
 .video-frame iframe { position:absolute; inset:0; width:100%; height:100%; border:0; }
 .video-card .video-title { padding:12px 14px 14px; font-size:14px; font-weight:600; }
-/* Video carousel slide */
+/* ── Video carousel slides ─────────────────────────────────── */
 .video-slide {
-  flex: 0 0 280px; scroll-snap-align: start;
+  flex: 0 0 min(320px, 85vw);
+  scroll-snap-align: start;
   background: var(--black-card);
   border: 1px solid var(--hairline);
   border-radius: var(--radius);
   overflow: hidden;
 }
+
+/* Thumbnail state */
+.video-thumb-state {
+  position: relative; width: 100%; aspect-ratio: 16/9;
+  cursor: pointer; overflow: hidden; background: #000;
+}
+.video-thumb-state img {
+  width: 100%; height: 100%; object-fit: cover;
+  transition: opacity .2s ease; display: block;
+}
+.video-thumb-state:hover img { opacity: .78; }
+.video-thumb-state:hover .play-btn { transform: translate(-50%,-50%) scale(1.1); }
+
+/* Player state — hidden until .is-playing */
+.video-iframe-state {
+  display: none;
+  position: relative; width: 100%; aspect-ratio: 16/9;
+}
+.video-iframe-state iframe {
+  position: absolute; inset: 0; width: 100%; height: 100%; border: 0;
+}
+.video-slide.is-playing .video-thumb-state { display: none; }
+.video-slide.is-playing .video-iframe-state { display: block; }
+
+/* Fullscreen + stop overlay buttons */
+.video-fs-btn, .video-stop-btn {
+  position: absolute; bottom: 8px; z-index: 10;
+  background: rgba(0,0,0,.68); border: none; color: #fff;
+  width: 32px; height: 32px; border-radius: 4px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  padding: 5px; transition: background .15s ease;
+}
+.video-fs-btn { right: 8px; }
+.video-stop-btn { right: 46px; font-size: 14px; }
+.video-fs-btn svg { width: 15px; height: 15px; }
+.video-fs-btn:hover, .video-stop-btn:hover { background: rgba(0,0,0,.92); }
+
+.video-no-thumb {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--smoke); font-size: 13px;
+}
+.video-slide-title { padding: 12px 14px 14px; font-size: 14px; font-weight: 600; color: var(--bone); }
+
 
 
 /* ── Horizontal carousels (Merch + Photos) ───────────────── */
