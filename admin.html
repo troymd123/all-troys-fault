@@ -162,6 +162,106 @@
       <div class="admin-list" id="merchList"></div>
     </div>
 
+
+    <!-- BACKGROUNDS -->
+    <div class="admin-panel" id="panel-backgrounds">
+      <p style="color:var(--smoke);font-size:13px;margin-bottom:20px;">
+        Upload a photo for each section of the site. Photos show subtly behind the content &mdash; great for moody band shots or stage photos. Leave any slot empty for the plain dark background.
+      </p>
+
+      <div class="bg-slot">
+        <div class="bg-slot-header">
+          <span class="bg-slot-label">Hero (top of page)</span>
+          <img class="bg-slot-thumb" id="bgThumb-hero" src="" alt="">
+        </div>
+        <div class="bg-slot-inputs">
+          <div class="field"><label>Upload photo</label><input type="file" accept="image/*" id="bgFile-hero"></div>
+          <div class="field"><label>Or paste URL</label><input type="url" id="bgUrl-hero" placeholder="https://"></div>
+        </div>
+        <div class="bg-slot-actions">
+          <button class="btn btn-primary" onclick="saveBg('hero')">Save</button>
+          <button class="btn btn-outline" onclick="clearBg('hero')">Clear</button>
+        </div>
+      </div>
+
+      <div class="bg-slot">
+        <div class="bg-slot-header">
+          <span class="bg-slot-label">Shows Section</span>
+          <img class="bg-slot-thumb" id="bgThumb-shows" src="" alt="">
+        </div>
+        <div class="bg-slot-inputs">
+          <div class="field"><label>Upload photo</label><input type="file" accept="image/*" id="bgFile-shows"></div>
+          <div class="field"><label>Or paste URL</label><input type="url" id="bgUrl-shows" placeholder="https://"></div>
+        </div>
+        <div class="bg-slot-actions">
+          <button class="btn btn-primary" onclick="saveBg('shows')">Save</button>
+          <button class="btn btn-outline" onclick="clearBg('shows')">Clear</button>
+        </div>
+      </div>
+
+      <div class="bg-slot">
+        <div class="bg-slot-header">
+          <span class="bg-slot-label">Videos Section</span>
+          <img class="bg-slot-thumb" id="bgThumb-videos" src="" alt="">
+        </div>
+        <div class="bg-slot-inputs">
+          <div class="field"><label>Upload photo</label><input type="file" accept="image/*" id="bgFile-videos"></div>
+          <div class="field"><label>Or paste URL</label><input type="url" id="bgUrl-videos" placeholder="https://"></div>
+        </div>
+        <div class="bg-slot-actions">
+          <button class="btn btn-primary" onclick="saveBg('videos')">Save</button>
+          <button class="btn btn-outline" onclick="clearBg('videos')">Clear</button>
+        </div>
+      </div>
+
+      <div class="bg-slot">
+        <div class="bg-slot-header">
+          <span class="bg-slot-label">Merch Section</span>
+          <img class="bg-slot-thumb" id="bgThumb-merch" src="" alt="">
+        </div>
+        <div class="bg-slot-inputs">
+          <div class="field"><label>Upload photo</label><input type="file" accept="image/*" id="bgFile-merch"></div>
+          <div class="field"><label>Or paste URL</label><input type="url" id="bgUrl-merch" placeholder="https://"></div>
+        </div>
+        <div class="bg-slot-actions">
+          <button class="btn btn-primary" onclick="saveBg('merch')">Save</button>
+          <button class="btn btn-outline" onclick="clearBg('merch')">Clear</button>
+        </div>
+      </div>
+
+      <div class="bg-slot">
+        <div class="bg-slot-header">
+          <span class="bg-slot-label">Booking Section</span>
+          <img class="bg-slot-thumb" id="bgThumb-book" src="" alt="">
+        </div>
+        <div class="bg-slot-inputs">
+          <div class="field"><label>Upload photo</label><input type="file" accept="image/*" id="bgFile-book"></div>
+          <div class="field"><label>Or paste URL</label><input type="url" id="bgUrl-book" placeholder="https://"></div>
+        </div>
+        <div class="bg-slot-actions">
+          <button class="btn btn-primary" onclick="saveBg('book')">Save</button>
+          <button class="btn btn-outline" onclick="clearBg('book')">Clear</button>
+        </div>
+      </div>
+
+      <div class="bg-slot">
+        <div class="bg-slot-header">
+          <span class="bg-slot-label">Follow / Social Section</span>
+          <img class="bg-slot-thumb" id="bgThumb-follow" src="" alt="">
+        </div>
+        <div class="bg-slot-inputs">
+          <div class="field"><label>Upload photo</label><input type="file" accept="image/*" id="bgFile-follow"></div>
+          <div class="field"><label>Or paste URL</label><input type="url" id="bgUrl-follow" placeholder="https://"></div>
+        </div>
+        <div class="bg-slot-actions">
+          <button class="btn btn-primary" onclick="saveBg('follow')">Save</button>
+          <button class="btn btn-outline" onclick="clearBg('follow')">Clear</button>
+        </div>
+      </div>
+
+      <div class="form-status" id="bgStatus"></div>
+    </div>
+
   </div>
 </div>
 
