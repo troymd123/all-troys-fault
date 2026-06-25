@@ -453,7 +453,7 @@ section:last-of-type { border-bottom: none; }
 .video-card .video-title { padding:12px 14px 14px; font-size:14px; font-weight:600; }
 /* ── Video carousel slides ─────────────────────────────────── */
 .video-slide {
-  flex: 0 0 min(320px, 85vw);
+  flex: 0 0 min(380px, 96vw);
   scroll-snap-align: start;
   background: var(--black-card);
   border: 1px solid var(--hairline);
@@ -463,7 +463,7 @@ section:last-of-type { border-bottom: none; }
 
 /* Thumbnail state */
 .video-thumb-state {
-  position: relative; width: 100%; aspect-ratio: 16/9;
+  position: relative; width: 100%; aspect-ratio: 3/2;
   cursor: pointer; overflow: hidden; background: #000;
 }
 .video-thumb-state img {
@@ -476,7 +476,7 @@ section:last-of-type { border-bottom: none; }
 /* Player state — hidden until .is-playing */
 .video-iframe-state {
   display: none;
-  position: relative; width: 100%; aspect-ratio: 16/9;
+  position: relative; width: 100%; aspect-ratio: 3/2;
 }
 .video-iframe-state iframe {
   position: absolute; inset: 0; width: 100%; height: 100%; border: 0;
