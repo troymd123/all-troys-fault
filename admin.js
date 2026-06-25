@@ -83,10 +83,10 @@
       return;
     }
     list.innerHTML = subs.map(s => {
-      const phone   = s.phone || "";
+      const email   = s.email || s.phone || "";
       const name    = s.name  || "";
       const date    = s.createdAt ? new Date(s.createdAt).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}) : "";
-      const display = name ? `${esc(name)} &mdash; ${esc(phone)}` : esc(phone);
+      const display = name ? `${esc(name)} &mdash; ${esc(email)}` : esc(email);
       return `
       <div class="admin-row">
         <div class="meta">

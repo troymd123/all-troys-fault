@@ -340,18 +340,18 @@
   const subStatus = document.getElementById("subStatus");
   if (subBtn) {
     subBtn.addEventListener("click", async () => {
-      const phone = (document.getElementById("subPhone").value || "").trim();
+      const email = (document.getElementById("subEmail").value || "").trim();
       const name  = (document.getElementById("subName").value  || "").trim();
-      if (!phone) { subStatus.textContent = "Enter your phone number."; subStatus.className = "form-status err"; return; }
+      if (!email) { subStatus.textContent = "Enter your email address."; subStatus.className = "form-status err"; return; }
       subBtn.disabled = true; subBtn.textContent = "Signing up\u2026";
       subStatus.textContent = ""; subStatus.className = "form-status";
       try {
-        const res  = await fetch(`${API}/api/newsletter/subscribe`, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ phone, name }) });
+        const res  = await fetch(`${API}/api/newsletter/subscribe`, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ email, name }) });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Couldn't sign you up.");
-        subStatus.textContent = data.already ? "You're already on the list!" : "You're in! Watch for a welcome text.";
+        subStatus.textContent = data.already ? "You're already on the list!" : "You're in! Check your email for a welcome message.";
         subStatus.className = "form-status ok";
-        document.getElementById("subPhone").value = "";
+        document.getElementById("subEmail").value = "";
         document.getElementById("subName").value  = "";
       } catch (err) {
         subStatus.textContent = err.message;
