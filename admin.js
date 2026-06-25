@@ -45,6 +45,7 @@
       document.querySelectorAll(".admin-panel").forEach(p => p.classList.remove("active"));
       btn.classList.add("active");
       document.getElementById(`panel-${btn.dataset.tab}`).classList.add("active");
+      if (btn.dataset.tab === "subscribers") loadSubCount();
     });
   });
 
@@ -65,9 +66,58 @@
     try {
       const res  = await fetch(`${API}/api/admin/subscribers`, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({password:getPassword()}) });
       const data = await res.json();
+      const countStr = `${data.count} SMS subscriber${data.count===1?"":"s"}`;
       const el   = document.getElementById("subCount");
-      if (el && data.count !== undefined) el.textContent = `${data.count} SMS subscriber${data.count===1?"":"s"}`;
+      if (el) el.textContent = countStr;
+      const el2  = document.getElementById("subCountPanel");
+      if (el2) el2.textContent = countStr;
+      if (data.subscribers) renderSubscribers(data.subscribers);
     } catch {}
+  }
+
+  function renderSubscribers(subs) {
+    const list = document.getElementById("subscriberList");
+    if (!list) return;
+    if (!subs.length) {
+      list.innerHTML = `<div class="empty-state">No subscribers yet.</div>`;
+      return;
+    }
+    list.innerHTML = subs.map(s => {
+      const phone   = s.phone || "";
+      const name    = s.name  || "";
+      const date    = s.createdAt ? new Date(s.createdAt).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}) : "";
+      const display = name ? `${esc(name)} &mdash; ${esc(phone)}` : esc(phone);
+      return `
+      <div class="admin-row">
+        <div class="meta">
+          <div class="title">${display}</div>
+          ${date ? `<div class="sub">${date}</div>` : ""}
+        </div>
+        <div class="row-actions">
+          <button class="danger" data-sub-id="${s.id}">Remove</button>
+        </div>
+      </div>`;
+    }).join("");
+
+    list.querySelectorAll("[data-sub-id]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        if (!confirm("Remove this subscriber?")) return;
+        try {
+          const res  = await fetch(`${API}/api/admin/subscribers`, {
+            method: "POST", headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({password: getPassword(), action: "delete", id: btn.dataset.subId})
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || "Failed.");
+          const countStr = `${data.count} SMS subscriber${data.count===1?"":"s"}`;
+          const el  = document.getElementById("subCount");
+          const el2 = document.getElementById("subCountPanel");
+          if (el)  el.textContent  = countStr;
+          if (el2) el2.textContent = countStr;
+          renderSubscribers(data.subscribers);
+        } catch(err) { alert(err.message); }
+      });
+    });
   }
 
   /* ── Image compression ──────────────────────────────────── */
